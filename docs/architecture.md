@@ -180,10 +180,10 @@ genmcp is a generic MCP (Model Context Protocol) server that acts as an adapter 
 
 ## Future Enhancements
 
-1. **Full Server Loop**: Complete STDIN/STDOUT and WebSocket server implementations
-2. **JWT Validation**: Proper JWT token validation for WebSocket mode
-3. **Metrics**: Execution metrics and monitoring
-4. **Logging**: Structured logging for debugging
-5. **Caching**: Cache tool schemas and configurations
-6. **Rate Limiting**: Prevent abuse with rate limits
+1. **JWT Validation**: Enhanced JWT token validation with claims validation (issuer, audience, etc.)
+2. **Metrics**: Execution metrics and monitoring
+3. **Logging**: Structured logging for debugging
+4. **Caching**: Cache tool schemas and configurations
+5. **Rate Limiting**: Prevent abuse with rate limits
+6. **Command Path Whitelisting**: Optional whitelist of allowed command paths for additional security
 

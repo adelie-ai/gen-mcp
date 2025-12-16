@@ -73,18 +73,48 @@ docker run -i genmcp serve --config /app/examples/config.toml --mode stdio
 docker run -p 8080:8080 genmcp serve --config /app/examples/config.toml --mode websocket --port 8080
 ```
 
+## VS Code Integration
+
+See `examples/vscode_mcp_config.json` and `examples/vscode_mcp_config_examples.md` for detailed VS Code MCP configuration examples.
+
+Quick example:
+```json
+{
+  "mcpServers": {
+    "genmcp": {
+      "command": "genmcp",
+      "args": [
+        "serve",
+        "--config",
+        "/path/to/config.toml",
+        "--mode",
+        "stdio"
+      ]
+    }
+  }
+}
+```
+
 ## Documentation
 
 - [Configuration Reference](docs/configuration.md) - Complete configuration guide
 - [Deployment Guide](docs/deployment.md) - Docker and bare metal deployment
 - [Architecture](docs/architecture.md) - System design and components
 - [Development Guide](docs/development.md) - Development setup and contribution
+- [VS Code Configuration](examples/vscode_mcp_config_examples.md) - VS Code MCP setup guide
 
 ## License
 
-[Add license information]
+Licensed under either of:
+
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+
+at your option.
 
 ## Contributing
 
-[Add contribution guidelines]
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
 

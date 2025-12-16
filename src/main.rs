@@ -147,13 +147,21 @@ async fn run_websocket_server(
     server: genmcp::server::McpServer,
     host: &str,
     port: u16,
-    _jwt_secret: Option<String>,
+    jwt_secret_override: Option<String>,
 ) -> Result<()> {
     let server = Arc::new(server);
     
+    // Get JWT config from server (config file) or CLI override
+    let jwt_config = jwt_secret_override
+        .map(|secret| genmcp::server::WebSocketAuth {
+            enabled: true,
+            secret: Some(secret),
+        })
+        .or_else(|| server.websocket_auth().cloned());
+    
     let app = Router::new()
         .route("/ws", get(websocket_handler))
-        .with_state(server);
+        .with_state((server, jwt_config));
     
     let addr = format!("{}:{}", host, port);
     let listener = TcpListener::bind(&addr).await?;
@@ -166,11 +174,19 @@ async fn run_websocket_server(
 async fn websocket_handler(
     ws: WebSocketUpgrade,
     headers: HeaderMap,
-    State(server): State<Arc<genmcp::server::McpServer>>,
+    State((server, jwt_config)): State<(Arc<genmcp::server::McpServer>, Option<genmcp::server::WebSocketAuth>)>,
 ) -> Response {
-    // Authenticate WebSocket connection
-    if extract_bearer_token(&headers).is_err() {
-        return (StatusCode::UNAUTHORIZED, "Missing or invalid Authorization header").into_response();
+    // Authenticate WebSocket connection if enabled
+    if let Some(ref auth) = jwt_config {
+        if auth.enabled {
+            if let Err(e) = validate_jwt_token(&headers, auth) {
+                eprintln!("WebSocket authentication failed: {}", e);
+                return (StatusCode::UNAUTHORIZED, format!("Authentication failed: {}", e)).into_response();
+            }
+        }
+        // If auth is disabled, allow connection without authentication
+    } else {
+        // No auth config means authentication is disabled
     }
     
     ws.on_upgrade(move |socket| handle_websocket_connection(socket, server))
@@ -225,9 +241,10 @@ async fn handle_websocket_connection(
     }
 }
 
-fn extract_bearer_token(headers: &HeaderMap) -> Result<String> {
+fn validate_jwt_token(headers: &HeaderMap, auth: &genmcp::server::WebSocketAuth) -> Result<()> {
     use genmcp::error::TransportError;
     
+    // Extract Bearer token from header
     let auth_header = headers.get("authorization")
         .ok_or_else(|| TransportError::Authentication("Missing Authorization header".to_string()))?
         .to_str()
@@ -245,7 +262,22 @@ fn extract_bearer_token(headers: &HeaderMap) -> Result<String> {
         return Err(TransportError::Authentication("Empty Bearer token".to_string()).into());
     }
     
-    Ok(token)
+    // If secret is provided, validate JWT; otherwise just check token exists (stub mode)
+    if let Some(ref secret) = auth.secret {
+        // Validate JWT token
+        let validation = jsonwebtoken::Validation::default();
+        let _decoded = jsonwebtoken::decode::<serde_json::Value>(
+            &token,
+            &jsonwebtoken::DecodingKey::from_secret(secret.as_ref()),
+            &validation,
+        ).map_err(|e| TransportError::Authentication(format!("JWT validation failed: {}", e)))?;
+        
+        // Token is valid
+        Ok(())
+    } else {
+        // Stub mode: just check token exists (for backward compatibility)
+        Ok(())
+    }
 }
 
 async fn handle_jsonrpc_message(

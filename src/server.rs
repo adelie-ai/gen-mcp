@@ -11,6 +11,9 @@ use serde_json::Value;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
+// Re-export WebSocketAuth for external use
+pub use crate::config::WebSocketAuth;
+
 /// MCP server state
 pub struct McpServer {
     /// Tool registry
@@ -19,12 +22,15 @@ pub struct McpServer {
     config: Arc<Config>,
     /// Initialized flag
     initialized: Arc<RwLock<bool>>,
+    /// WebSocket authentication configuration
+    websocket_auth: Option<crate::config::WebSocketAuth>,
 }
 
 impl McpServer {
     /// Create a new MCP server from configuration
     pub fn new(config: Config) -> Result<Self> {
         let tool_registry = Arc::new(ToolRegistry::from_config(&config)?);
+        let websocket_auth = config.websocket_auth.clone();
         let config = Arc::new(config);
         let initialized = Arc::new(RwLock::new(false));
 
@@ -32,7 +38,13 @@ impl McpServer {
             tool_registry,
             config,
             initialized,
+            websocket_auth,
         })
+    }
+
+    /// Get WebSocket authentication configuration
+    pub fn websocket_auth(&self) -> Option<&crate::config::WebSocketAuth> {
+        self.websocket_auth.as_ref()
     }
 
     /// Handle initialize request
@@ -101,7 +113,22 @@ impl McpServer {
         for (param_name, param) in &tool.parameters {
             if let Some(value) = args_map.get(param_name) {
                 if let Some(str_value) = value.as_str() {
-                    tool_args.push(str_value.to_string());
+                    // Special handling for "args" parameter: split by spaces for commands like docker
+                    // This allows passing "run --name my-container nginx" as a single string
+                    if param_name == "args" && str_value.contains(' ') {
+                        // Split by spaces, but preserve quoted strings
+                        // Simple implementation: split by spaces, handle basic quoting
+                        let parts: Vec<&str> = str_value.split_whitespace().collect();
+                        for part in parts {
+                            // Remove surrounding quotes if present
+                            let cleaned = part.trim_matches('"').trim_matches('\'');
+                            if !cleaned.is_empty() {
+                                tool_args.push(cleaned.to_string());
+                            }
+                        }
+                    } else {
+                        tool_args.push(str_value.to_string());
+                    }
                 } else {
                     tool_args.push(value.to_string());
                 }

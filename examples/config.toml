@@ -1,6 +1,12 @@
 # Example genmcp configuration file
 # This demonstrates configuring common Unix/shell commands
 
+# WebSocket authentication configuration (optional)
+# If omitted, authentication is disabled for WebSocket mode
+# [websocket_auth]
+# enabled = true  # Enable JWT authentication (default: true)
+# secret = "your-secret-key-here"  # Required if enabled=true
+
 [groups.file_operations]
 default_timeout = 30
 default_timeout_max = 300

@@ -157,6 +157,24 @@ pub struct ConfigToml {
     /// Groups of tools
     #[serde(default)]
     pub groups: HashMap<String, Group>,
+    /// WebSocket authentication configuration (optional)
+    #[serde(default)]
+    pub websocket_auth: Option<WebSocketAuth>,
+}
+
+/// WebSocket authentication configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WebSocketAuth {
+    /// Enable JWT authentication (default: true)
+    #[serde(default = "default_auth_enabled")]
+    pub enabled: bool,
+    /// JWT secret key for token validation (required if enabled)
+    #[serde(default)]
+    pub secret: Option<String>,
+}
+
+fn default_auth_enabled() -> bool {
+    true
 }
 
 /// Root configuration structure
@@ -164,6 +182,8 @@ pub struct ConfigToml {
 pub struct Config {
     /// Groups of tools
     pub groups: HashMap<String, Group>,
+    /// WebSocket authentication configuration (optional)
+    pub websocket_auth: Option<WebSocketAuth>,
 }
 
 /// Resolved tool configuration with all defaults applied
@@ -223,6 +243,16 @@ impl Config {
 
     /// Validate configuration
     fn validate(&mut self) -> Result<()> {
+        // Validate WebSocket auth configuration
+        if let Some(ref auth) = self.websocket_auth {
+            if auth.enabled && auth.secret.is_none() {
+                return Err(ConfigError::InvalidValue {
+                    field: "websocket_auth.secret".to_string(),
+                    message: "JWT secret is required when authentication is enabled".to_string(),
+                }.into());
+            }
+        }
+        
         let mut tool_names = std::collections::HashSet::new();
 
         for (group_name, group) in &mut self.groups {
@@ -431,6 +461,7 @@ impl std::str::FromStr for Config {
 
         let mut config = Config {
             groups: config_toml.groups,
+            websocket_auth: config_toml.websocket_auth,
         };
 
         // Validate configuration
@@ -739,5 +770,74 @@ default_timeout = "not_a_number"
   # Missing description and command
 "#;
         assert!(Config::from_str(toml).is_err());
+    }
+
+    #[test]
+    fn test_websocket_auth_config_enabled() {
+        let toml = r#"
+[websocket_auth]
+enabled = true
+secret = "my-secret-key"
+
+[groups.test_group]
+  [[groups.test_group.tools]]
+  name = "test_tool"
+  description = "A test tool"
+  command = "/bin/echo"
+"#;
+        let config = Config::from_str(toml).unwrap();
+        assert!(config.websocket_auth.is_some());
+        let auth = config.websocket_auth.as_ref().unwrap();
+        assert!(auth.enabled);
+        assert_eq!(auth.secret.as_ref().unwrap(), "my-secret-key");
+    }
+
+    #[test]
+    fn test_websocket_auth_config_disabled() {
+        let toml = r#"
+[websocket_auth]
+enabled = false
+
+[groups.test_group]
+  [[groups.test_group.tools]]
+  name = "test_tool"
+  description = "A test tool"
+  command = "/bin/echo"
+"#;
+        let config = Config::from_str(toml).unwrap();
+        assert!(config.websocket_auth.is_some());
+        let auth = config.websocket_auth.as_ref().unwrap();
+        assert!(!auth.enabled);
+    }
+
+    #[test]
+    fn test_websocket_auth_config_missing_secret() {
+        let toml = r#"
+[websocket_auth]
+enabled = true
+# secret missing - should fail validation
+
+[groups.test_group]
+  [[groups.test_group.tools]]
+  name = "test_tool"
+  description = "A test tool"
+  command = "/bin/echo"
+"#;
+        let err = Config::from_str(toml).unwrap_err();
+        assert!(matches!(err, crate::error::GenMcpError::Config(ConfigError::InvalidValue { .. })));
+    }
+
+    #[test]
+    fn test_websocket_auth_config_omitted() {
+        let toml = r#"
+[groups.test_group]
+  [[groups.test_group.tools]]
+  name = "test_tool"
+  description = "A test tool"
+  command = "/bin/echo"
+"#;
+        let config = Config::from_str(toml).unwrap();
+        // websocket_auth should be None when omitted
+        assert!(config.websocket_auth.is_none());
     }
 }

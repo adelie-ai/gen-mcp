@@ -101,6 +101,23 @@ required = true  # Optional, default: false
 
 MAX values are hard limits that LLMs cannot exceed. If an LLM tries to override a value beyond the MAX, the request will be rejected with an error.
 
+## WebSocket Authentication Configuration
+
+For WebSocket mode, you can configure JWT authentication:
+
+```toml
+[websocket_auth]
+enabled = true  # Enable JWT authentication (default: true if section exists)
+secret = "your-secret-key-here"  # Required if enabled=true
+```
+
+- `enabled` (optional, boolean): Enable JWT authentication. Default: `true` if `[websocket_auth]` section exists
+- `secret` (optional, string): JWT secret key for token validation. Required if `enabled = true`
+
+**To disable authentication entirely**, omit the `[websocket_auth]` section from your configuration file.
+
+**CLI Override**: The `--jwt-secret` CLI option takes precedence over the config file setting.
+
 ## Validation Rules
 
 - `timeout_max` must be >= `timeout` (if both specified)
@@ -110,8 +127,10 @@ MAX values are hard limits that LLMs cannot exceed. If an LLM tries to override 
 - `stderr_lines_max` must be >= `stderr_lines` (if both specified)
 - `termination_signal` must be "SIGTERM" or "SIGINT"
 - Tool names must be unique across all groups (final name: `{group}_{tool}`)
+- If `websocket_auth.enabled = true`, then `websocket_auth.secret` is required
 
 ## Examples
 
 See `examples/config.toml` for comprehensive examples with common Unix commands.
+See `examples/docker_config.toml` for Docker command examples.
 

@@ -1,0 +1,55 @@
+{
+  "mcpServers": {
+    "genmcp-file-operations": {
+      "command": "genmcp",
+      "args": [
+        "serve",
+        "--config",
+        "/path/to/config.toml",
+        "--mode",
+        "stdio"
+      ],
+      "env": {}
+    },
+    "genmcp-docker": {
+      "command": "genmcp",
+      "args": [
+        "serve",
+        "--config",
+        "/path/to/docker_config.toml",
+        "--mode",
+        "stdio"
+      ],
+      "env": {}
+    },
+    "genmcp-custom": {
+      "command": "genmcp",
+      "args": [
+        "serve",
+        "--config",
+        "/home/user/my-tools.toml",
+        "--mode",
+        "stdio"
+      ],
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "genmcp-websocket": {
+      "command": "genmcp",
+      "args": [
+        "serve",
+        "--config",
+        "/path/to/config.toml",
+        "--mode",
+        "websocket",
+        "--host",
+        "localhost",
+        "--port",
+        "8080"
+      ],
+      "env": {}
+    }
+  }
+}
+
