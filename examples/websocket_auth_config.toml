@@ -1,0 +1,58 @@
+# Example configuration demonstrating WebSocket authentication options
+# This shows different ways to configure JWT authentication for WebSocket mode
+
+# ============================================================================
+# OPTION 1: Enable JWT authentication with secret key
+# ============================================================================
+[websocket_auth]
+enabled = true
+secret = "your-secret-key-here-change-in-production"
+
+# When enabled=true and secret is provided:
+# - WebSocket connections require Authorization: Bearer <token> header
+# - JWT tokens are validated using the secret key
+# - Invalid or missing tokens result in HTTP 401 Unauthorized
+
+# ============================================================================
+# OPTION 2: Disable authentication (allow all connections)
+# ============================================================================
+# [websocket_auth]
+# enabled = false
+
+# When enabled=false:
+# - WebSocket connections are accepted without authentication
+# - No Authorization header required
+# - Useful for development or trusted networks
+
+# ============================================================================
+# OPTION 3: Omit websocket_auth section entirely
+# ============================================================================
+# If you don't include [websocket_auth] at all:
+# - Authentication is disabled by default
+# - All WebSocket connections are accepted
+# - Simplest configuration for development
+
+# ============================================================================
+# CLI Override
+# ============================================================================
+# The --jwt-secret CLI option takes precedence over config file:
+#   genmcp serve --config config.toml --mode websocket --jwt-secret "cli-secret"
+# This will override the secret in the config file.
+
+# ============================================================================
+# Example tool groups (same as other configs)
+# ============================================================================
+
+[groups.example]
+default_timeout = 30
+default_timeout_max = 300
+
+  [[groups.example.tools]]
+  name = "echo"
+  description = "Echo a message"
+  command = "/bin/echo"
+  
+    [groups.example.tools.parameters.message]
+    description = "Message to echo"
+    required = true
+

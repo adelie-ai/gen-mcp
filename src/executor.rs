@@ -485,7 +485,7 @@ mod tests {
         // Create output with few lines
         let output = "line 1\nline 2\nline 3";
         
-        let limited = apply_line_limits_to_string(&output, 10, 10);
+        let limited = apply_line_limits_to_string(output, 10, 10);
         
         // Should return all lines since within limits
         assert_eq!(limited, output);
@@ -549,17 +549,10 @@ mod tests {
         
         // Should timeout (may succeed if system is very fast, but unlikely with 5s sleep)
         // On most systems this will timeout
-        if result.is_err() {
-            if let Err(e) = result {
-                match e {
-                    crate::error::GenMcpError::Execution(ExecutionError::Timeout { .. }) => {
-                        // Expected
-                    }
-                    _ => {
-                        // May succeed on very fast systems, that's ok
-                    }
-                }
-            }
+        if let Err(crate::error::GenMcpError::Execution(ExecutionError::Timeout { .. })) = result {
+            // Expected timeout
+        } else if result.is_err() {
+            // May succeed on very fast systems, that's ok
         }
     }
 

@@ -210,7 +210,7 @@ async fn handle_websocket_connection(
                         eprintln!("Error parsing JSON-RPC message: {}", e);
                         let error_response = jsonrpc_error_response(None, -32700, "Parse error", None);
                         if let Ok(resp_str) = serde_json::to_string(&error_response) {
-                            let _ = sender.send(Message::Text(resp_str)).await;
+                                    let _ = sender.send(Message::Text(resp_str.into())).await;
                         }
                         continue;
                     }
@@ -222,7 +222,7 @@ async fn handle_websocket_connection(
                 // Send response if present
                 if let Some(resp) = response {
                     if let Ok(resp_str) = serde_json::to_string(&resp) {
-                        if let Err(e) = sender.send(Message::Text(resp_str)).await {
+                        if let Err(e) = sender.send(Message::Text(resp_str.into())).await {
                             eprintln!("Error sending WebSocket response: {}", e);
                             break;
                         }

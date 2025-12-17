@@ -84,6 +84,21 @@ fn output_json_schema() -> Result<()> {
           }
         }
       }
+    },
+    "websocket_auth": {
+      "type": "object",
+      "description": "WebSocket authentication configuration (optional). Omit to disable authentication.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable JWT authentication (default: true if section exists)",
+          "default": true
+        },
+        "secret": {
+          "type": "string",
+          "description": "JWT secret key for token validation (required if enabled=true)"
+        }
+      }
     }
   }
 }"#;
@@ -93,6 +108,16 @@ fn output_json_schema() -> Result<()> {
 
 fn output_toml_example() -> Result<()> {
     let example = r#"# Example genmcp configuration file
+
+# WebSocket authentication configuration (optional)
+# Omit this section to disable authentication entirely
+[websocket_auth]
+enabled = true  # Enable JWT authentication (default: true)
+secret = "your-secret-key-here"  # Required if enabled=true
+
+# To disable authentication, either:
+# 1. Omit the [websocket_auth] section entirely, or
+# 2. Set enabled = false
 
 [groups.file_ops]
 default_timeout = 30
@@ -163,6 +188,17 @@ Each parameter has:
 - `description`: Parameter description
 - `example`: Example value (optional)
 - `required`: Whether parameter is required (default: false)
+
+## WebSocket Authentication Configuration
+
+Optional `[websocket_auth]` section for WebSocket mode:
+
+- `enabled` (optional, boolean): Enable JWT authentication. Default: `true` if section exists
+- `secret` (optional, string): JWT secret key for token validation. Required if `enabled = true`
+
+**To disable authentication entirely**, omit the `[websocket_auth]` section from your configuration file.
+
+**CLI Override**: The `--jwt-secret` CLI option takes precedence over the config file setting.
 "#;
     println!("{}", docs);
     Ok(())
