@@ -52,7 +52,7 @@ enum Commands {
     /// Run the MCP server
     Serve {
         /// Path to TOML configuration file
-        #[arg(short, long)]
+        #[arg(short, long, env = "GENMCP_CONFIG")]
         config: String,
         /// Transport mode
         #[arg(short, long, default_value_t = TransportMode::Stdio)]

@@ -49,12 +49,14 @@ cargo build --release
 
 1. Create a configuration file (see `examples/config.toml`)
 
-2. Run in STDIN/STDOUT mode (for VS Code):
+2. Choose the transport mode at runtime with `--mode` (this is **not** part of the config file).
+
+3. Run in STDIN/STDOUT mode (for VS Code):
 ```bash
 ./target/release/genmcp serve --config examples/config.toml --mode stdio
 ```
 
-3. Run in WebSocket mode:
+4. Run in WebSocket mode:
 ```bash
 ./target/release/genmcp serve --config examples/config.toml --mode websocket --port 8080
 ```
@@ -98,10 +100,19 @@ Key configuration concepts:
 docker build -t genmcp .
 
 # Run in stdio mode
-docker run -i genmcp serve --config /app/examples/config.toml --mode stdio
+docker run -i genmcp serve --mode stdio
 
 # Run in websocket mode
-docker run -p 8080:8080 genmcp serve --config /app/examples/config.toml --mode websocket --port 8080
+docker run -p 8080:8080 genmcp serve --mode websocket --port 8080
+```
+
+The container defaults `GENMCP_CONFIG` to `/example_configs/echo_config.toml`. To mount your own config, mount into `/configs` and set `GENMCP_CONFIG`:
+
+```bash
+docker run -i \
+  -v /path/to/config.toml:/configs/config.toml:ro \
+  -e GENMCP_CONFIG=/configs/config.toml \
+  genmcp serve --mode stdio
 ```
 
 ## VS Code Integration

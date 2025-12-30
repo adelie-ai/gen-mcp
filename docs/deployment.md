@@ -15,14 +15,13 @@ docker build -t genmcp .
 For VS Code integration or other stdio-based MCP clients:
 
 ```bash
-docker run -i genmcp serve --config /app/examples/config.toml --mode stdio
+docker run -i genmcp serve --mode stdio
 ```
 
 ### Running in WebSocket Mode
 
 ```bash
 docker run -p 8080:8080 genmcp serve \
-  --config /app/examples/config.toml \
   --mode websocket \
   --port 8080 \
   --host 0.0.0.0
@@ -34,7 +33,8 @@ Mount your configuration file:
 
 ```bash
 docker run -i -v /path/to/config.toml:/app/config.toml \
-  genmcp serve --config /app/config.toml --mode stdio
+  -e GENMCP_CONFIG=/app/config.toml \
+  genmcp serve --mode stdio
 ```
 
 ### Environment Variables
@@ -69,6 +69,11 @@ cp target/release/genmcp ~/.local/bin/
 ```
 
 ### Running
+
+`genmcp` uses the same TOML configuration for both transports. The transport is selected at runtime with `--mode`:
+
+- `--mode stdio` (default): STDIN/STDOUT transport (typical for VS Code integration)
+- `--mode websocket`: WebSocket transport (typical for hosted deployments)
 
 ```bash
 # STDIN/STDOUT mode

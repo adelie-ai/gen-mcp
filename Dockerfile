@@ -31,11 +31,14 @@ WORKDIR /app
 # Copy binary from builder
 COPY --from=builder /build/target/release/genmcp /app/genmcp
 
-# Copy example config
-COPY examples/config.toml /app/examples/config.toml
+# Mount point for external configuration (recommended)
+RUN mkdir -p /configs /example_configs
+
+# Copy example configs into the image for reference and quick-start
+COPY examples/ /example_configs/
 
 # Set ownership
-RUN chown -R genmcp:genmcp /app
+RUN chown -R genmcp:genmcp /app /configs /example_configs
 
 USER genmcp
 
@@ -44,5 +47,7 @@ EXPOSE 8080
 
 # Default to stdio mode
 ENTRYPOINT ["/app/genmcp"]
-CMD ["serve", "--config", "/app/examples/config.toml", "--mode", "stdio"]
+# Default config can be overridden by setting GENMCP_CONFIG or passing --config.
+ENV GENMCP_CONFIG=/example_configs/echo_config.toml
+CMD ["serve", "--mode", "stdio"]
 

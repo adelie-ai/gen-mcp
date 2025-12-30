@@ -1,0 +1,24 @@
+# Minimal example configuration: a single `echo` tool.
+#
+# This is a good "default" config for containers because:
+# - It is safe and predictable
+# - It depends only on `/bin/echo` (present in most base images)
+#
+# Select transport mode at runtime (not in this file):
+# - STDIO:    genmcp serve --mode stdio
+# - WebSocket: genmcp serve --mode websocket --host 0.0.0.0 --port 8080
+
+[groups.example]
+default_timeout = 10
+default_timeout_max = 30
+
+[[groups.example.tools]]
+name = "echo"
+description = "Echo a message"
+command = "/bin/echo"
+
+[groups.example.tools.parameters.message]
+description = "Message to echo"
+required = true
+
+
