@@ -118,7 +118,7 @@ genmcp is a generic MCP (Model Context Protocol) server that acts as an adapter 
 
 - **Purpose**: Handle communication with MCP clients
 - **Modes**:
-  - STDIN/STDOUT: Newline-delimited JSON-RPC
+  - STDIN/STDOUT: JSON-RPC over stdio (auto-detects newline-delimited JSON vs `Content-Length: ...` framing)
   - WebSocket: JSON-RPC over WebSocket frames
 
 ### 7. CLI Interface (`main.rs`)

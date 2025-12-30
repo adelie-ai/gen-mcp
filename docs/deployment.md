@@ -150,8 +150,9 @@ ws.onopen = () => {
 1. **File Permissions**: Ensure configuration file has appropriate permissions
 2. **Command Paths**: Use absolute paths for commands in configuration
 3. **Network Access**: In WebSocket mode, consider firewall rules
-4. **Authentication**: JWT authentication is stubbed - implement proper validation for production
-5. **User Permissions**: Run with minimal required privileges
+4. **Transport Security (TLS)**: WebSocket mode is plain `ws://` by default. For real deployments, run behind TLS termination (reverse proxy/ingress) and use `wss://` externally so Bearer tokens are not sent in cleartext.
+5. **Authentication**: WebSocket auth supports JWT signature verification (shared secret or JWKS via OIDC/JWKS URL), but it does not currently expose detailed policy controls (e.g., audience/issuer allowlists, required claims) and should be reviewed for your threat model.
+6. **User Permissions**: Run with minimal required privileges
 
 ## Troubleshooting
 

@@ -103,20 +103,29 @@ MAX values are hard limits that LLMs cannot exceed. If an LLM tries to override 
 
 ## WebSocket Authentication Configuration
 
-For WebSocket mode, you can configure JWT authentication:
+For WebSocket mode, you can configure JWT Bearer token authentication for the `/ws` endpoint.
 
 ```toml
 [websocket_auth]
 enabled = true  # Enable JWT authentication (default: true if section exists)
-secret = "your-secret-key-here"  # Required if enabled=true
+secret = "your-secret-key-here"  # One of: secret / oidc_issuer / jwks_url
 ```
 
 - `enabled` (optional, boolean): Enable JWT authentication. Default: `true` if `[websocket_auth]` section exists
-- `secret` (optional, string): JWT secret key for token validation. Required if `enabled = true`
+- `secret` (optional, string): Validate JWT signature using a shared secret (HMAC). Mutually exclusive with `oidc_issuer` and `jwks_url`.
+- `oidc_issuer` (optional, string): Validate JWT signature using keys discovered via OIDC issuer (`/.well-known/openid-configuration` → `jwks_uri`). Mutually exclusive with `secret` and `jwks_url`.
+- `jwks_url` (optional, string): Validate JWT signature using keys fetched from a JWKS URL. Mutually exclusive with `secret` and `oidc_issuer`.
 
-**To disable authentication entirely**, omit the `[websocket_auth]` section from your configuration file.
+When authentication is enabled, clients must include an HTTP header on the WebSocket upgrade request:
 
-**CLI Override**: The `--jwt-secret` CLI option takes precedence over the config file setting.
+- `Authorization: Bearer <token>`
+
+**To disable authentication entirely**, omit the `[websocket_auth]` section or set `enabled = false`.
+
+**CLI Overrides**:
+
+- `--oidc-issuer <url>`: enable auth using OIDC discovery (takes precedence)
+- `--jwt-secret <secret>`: enable auth using a shared secret (legacy; used if `--oidc-issuer` is not provided)
 
 ## Validation Rules
 

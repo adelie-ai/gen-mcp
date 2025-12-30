@@ -2,6 +2,14 @@
 
 `genmcp` turns existing command-line programs (shell scripts, binaries, and CLIs) into an MCP server you can plug into MCP clients (like VS Code) **without rewriting them as a bespoke MCP service**.
 
+## Security Notice (Read This)
+
+`genmcp` **does not vet, sandbox, or approve** the command lines you configure or the programs you execute. It provides **no built-in allow/deny or interactive approval mechanism**.
+
+- **You are responsible** for ensuring the configured commands and binaries are safe and appropriate for your environment.
+- **Treat your config as code**: review it, restrict who can edit it, and assume a malicious or careless tool definition can run destructive commands.
+- **Run in a secured environment**: use least-privilege accounts, tight filesystem/network permissions, and appropriate OS/container isolation for your threat model.
+
 ## Why genmcp?
 
 - **Turn arbitrary scripts into MCP tools**: Wrap your existing shell scripts and internal tooling behind MCP, with structured tool definitions and parameters.
@@ -20,6 +28,7 @@ Common scenarios:
 ## Features
 
 - **Dual Transport Modes**: STDIN/STDOUT (for VS Code) and WebSocket (for web services)
+- **STDIO compatibility**: Supports both newline-delimited JSON and `Content-Length` framed JSON-RPC over STDIO
 - **TOML Configuration**: Flexible, group-based configuration with defaults and overrides
 - **Secure Execution**: No shell execution, explicit argument vectors, proper escaping
 - **Timeout Management**: Configurable timeouts with graceful termination (SIGTERM/SIGINT → SIGKILL)
