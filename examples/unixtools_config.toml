@@ -69,6 +69,96 @@ flag = "-r"
 example = "true"
 required = false
 
+[[groups.file_operations.tools]]
+name = "mkdir"
+description = "Create directories by executing the Unix /bin/mkdir command. Use the parents flag to create parent directories as needed (-p)."
+command = "/bin/mkdir"
+arg_order = ["parents", "path"]
+
+[groups.file_operations.tools.parameters.path]
+description = "Directory path to create"
+required = true
+
+[groups.file_operations.tools.parameters.parents]
+description = "Create parent directories as needed (no error if existing)"
+flag = "-p"
+example = "true"
+required = false
+
+[[groups.file_operations.tools]]
+name = "ls"
+description = "List directory contents by executing the Unix /bin/ls command. Shows files and directories in the specified path (or current directory if omitted)."
+command = "/bin/ls"
+arg_order = ["long", "all", "human", "recursive", "path"]
+
+[groups.file_operations.tools.parameters.path]
+description = "Directory path to list (defaults to current directory if omitted)"
+required = false
+
+[groups.file_operations.tools.parameters.long]
+description = "Use long format listing"
+flag = "-l"
+example = "true"
+required = false
+
+[groups.file_operations.tools.parameters.all]
+description = "Show all files including hidden files (starting with .)"
+flag = "-a"
+example = "true"
+required = false
+
+[groups.file_operations.tools.parameters.human]
+description = "Use human-readable file sizes"
+flag = "-h"
+example = "true"
+required = false
+
+[groups.file_operations.tools.parameters.recursive]
+description = "List directories recursively"
+flag = "-R"
+example = "true"
+required = false
+
+[[groups.file_operations.tools]]
+name = "touch"
+description = "Create empty files or update file timestamps by executing the Unix /usr/bin/touch command. Creates the file if it doesn't exist, or updates its access and modification times if it does."
+command = "/usr/bin/touch"
+arg_order = ["file"]
+
+[groups.file_operations.tools.parameters.file]
+description = "File path to create or update"
+required = true
+
+[[groups.file_operations.tools]]
+name = "pwd"
+description = "Print the current working directory by executing the Unix /bin/pwd command. Returns the absolute path of the current directory."
+command = "/bin/pwd"
+arg_order = []
+
+[[groups.file_operations.tools]]
+name = "bash"
+description = "Execute a bash command by running /bin/bash with the -c flag. The command string will be interpreted by bash, allowing use of shell features like pipes, redirects, and variables. Use with caution as this allows shell interpretation."
+command = "/bin/bash"
+arg_order = ["command"]
+
+[groups.file_operations.tools.parameters.command]
+description = "Bash command to execute (will be passed to bash -c)"
+required = true
+flag = "-c"
+takes_value = true
+
+[[groups.file_operations.tools]]
+name = "write_file"
+description = "Create or overwrite a text file with the given contents. Uses bash with printf to safely write content to a file, handling special characters correctly. Provide the command as: printf '%s' 'content' > 'file' where content is the text to write and file is the target file path."
+command = "/bin/bash"
+arg_order = ["command"]
+
+[groups.file_operations.tools.parameters.command]
+description = "Bash command to write file. Format: printf '%s' 'content' > 'file'. Example: printf '%s' 'Hello World' > /tmp/test.txt"
+required = true
+flag = "-c"
+takes_value = true
+
 [groups.text_processing]
 default_timeout = 60
 default_timeout_max = 600
@@ -76,6 +166,26 @@ default_output_head_lines = 200
 default_output_tail_lines = 200
 default_output_head_lines_max = 2000
 default_output_tail_lines_max = 2000
+
+[[groups.text_processing.tools]]
+name = "cat"
+description = "Display file contents by executing the Unix /bin/cat command. Can concatenate multiple files or display a single file."
+command = "/bin/cat"
+arg_order = ["file"]
+
+[groups.text_processing.tools.parameters.file]
+description = "File to display"
+required = true
+
+[[groups.text_processing.tools]]
+name = "echo"
+description = "Output text by executing the Unix /bin/echo command. Useful for generating text output or testing."
+command = "/bin/echo"
+arg_order = ["text"]
+
+[groups.text_processing.tools.parameters.text]
+description = "Text to output"
+required = true
 
 [[groups.text_processing.tools]]
 name = "grep"
@@ -101,7 +211,7 @@ required = false
 
 [[groups.text_processing.tools]]
 name = "rg"
-description = "Fast text search by executing the Unix ripgrep CLI (rg) from PATH. Provide a pattern and a file/directory path; returns matching lines."
+description = "Fast text search by executing the Unix ripgrep CLI (rg) from PATH. Provide a pattern and a file/directory path; returns matching lines. Prefer this to grep when rg has required functionality."
 command = "rg"
 timeout = 120
 timeout_max = 600
@@ -117,9 +227,9 @@ required = true
 
 [[groups.text_processing.tools]]
 name = "sed"
-description = "Apply text transformations by executing the Unix /bin/sed stream editor on an input file. The script argument is passed directly to sed."
+description = "Apply text transformations by executing the Unix /bin/sed stream editor on an input file. The script argument is passed directly to sed. Use in_place to modify the file directly instead of outputting to stdout."
 command = "/bin/sed"
-arg_order = ["script", "file"]
+arg_order = ["in_place", "script", "file"]
 
 [groups.text_processing.tools.parameters.script]
 description = "Sed script/command"
@@ -128,6 +238,12 @@ required = true
 [groups.text_processing.tools.parameters.file]
 description = "Input file"
 required = true
+
+[groups.text_processing.tools.parameters.in_place]
+description = "Edit file in place (modifies the file directly instead of outputting to stdout)"
+flag = "-i"
+example = "true"
+required = false
 
 [[groups.text_processing.tools]]
 name = "awk"
@@ -166,6 +282,34 @@ description = "Count words only"
 flag = "-w"
 example = "true"
 required = false
+
+[[groups.text_processing.tools]]
+name = "diff"
+description = "Compare files and show differences by executing the Unix /usr/bin/diff command. Shows line-by-line differences between two files."
+command = "/usr/bin/diff"
+arg_order = ["file1", "file2"]
+
+[groups.text_processing.tools.parameters.file1]
+description = "First file to compare"
+required = true
+
+[groups.text_processing.tools.parameters.file2]
+description = "Second file to compare"
+required = true
+
+[[groups.text_processing.tools]]
+name = "patch"
+description = "Apply patch files by executing the Unix /usr/bin/patch command. Applies a patch file to modify an existing file."
+command = "/usr/bin/patch"
+arg_order = ["file", "patch_file"]
+
+[groups.text_processing.tools.parameters.file]
+description = "File to patch"
+required = true
+
+[groups.text_processing.tools.parameters.patch_file]
+description = "Patch file to apply"
+required = true
 
 [groups.file_search]
 default_timeout = 300
