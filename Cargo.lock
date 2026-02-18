@@ -699,6 +699,7 @@ dependencies = [
  "futures-util",
  "jsonwebtoken",
  "jwtk",
+ "native-tls",
  "nix",
  "reqwest",
  "rust-mcp-schema",
