@@ -15,34 +15,11 @@ use genmcp::config::Config;
 use genmcp::error::Result;
 use serde_json::Value;
 use std::fmt;
-use std::io::Write;
 use std::sync::Arc;
 use tokio::net::TcpListener;
 
-// #region agent log
-fn agent_debug_log(hypothesis_id: &str, location: &str, message: &str, data: serde_json::Value) {
-    let ts = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_millis())
-        .unwrap_or(0);
-    let payload = serde_json::json!({
-        "sessionId": "debug-session",
-        "runId": "run1",
-        "hypothesisId": hypothesis_id,
-        "location": location,
-        "message": message,
-        "data": data,
-        "timestamp": ts
-    });
-    if let Ok(mut f) = std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open("/home/dave/projects/genmcp/.cursor/debug.log")
-    {
-        let _ = writeln!(f, "{}", payload);
-    }
-}
-// #endregion
+// Debug logging removed — was writing to a hardcoded absolute path.
+// Use RUST_LOG=debug with tracing-subscriber for debug output instead.
 
 #[derive(Clone, Debug, ValueEnum)]
 enum TransportMode {
@@ -148,12 +125,6 @@ async fn main() -> Result<()> {
         Commands::Config { command } => match command {
             ConfigCommands::Schema => genmcp::config_schema::output_generated_schema()?,
             ConfigCommands::Example => {
-                agent_debug_log(
-                    "H_cli_example",
-                    "src/main.rs:Commands::Config::Example",
-                    "dispatch to output_generated_example_config",
-                    serde_json::json!({}),
-                );
                 genmcp::config_schema::output_generated_example_config()?
             }
             ConfigCommands::Docs { curated } => {

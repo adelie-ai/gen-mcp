@@ -7,32 +7,6 @@ use crate::error::Result;
 use schemars::schema::{InstanceType, RootSchema, Schema, SchemaObject, SingleOrVec};
 use schemars::schema_for;
 use std::collections::HashMap;
-use std::io::Write;
-
-// #region agent log
-fn agent_debug_log(hypothesis_id: &str, location: &str, message: &str, data: serde_json::Value) {
-    let ts = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_millis())
-        .unwrap_or(0);
-    let payload = serde_json::json!({
-        "sessionId": "debug-session",
-        "runId": "run1",
-        "hypothesisId": hypothesis_id,
-        "location": location,
-        "message": message,
-        "data": data,
-        "timestamp": ts
-    });
-    if let Ok(mut f) = std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open("/home/dave/projects/genmcp/.cursor/debug.log")
-    {
-        let _ = writeln!(f, "{}", payload);
-    }
-}
-// #endregion
 
 /// Output generated JSON Schema for the TOML configuration structure.
 pub fn output_generated_schema() -> Result<()> {
@@ -54,22 +28,7 @@ pub fn output_example_config() -> Result<()> {
 /// This output is intentionally "mechanical" (no comments) but stays in sync with the
 /// Rust structures: if you add a new required field, this code must be updated to compile.
 pub fn output_generated_example_config() -> Result<()> {
-    agent_debug_log(
-        "H_generated_example",
-        "src/config_schema.rs:output_generated_example_config",
-        "enter",
-        serde_json::json!({}),
-    );
     let config = build_generated_example();
-    agent_debug_log(
-        "H_generated_example",
-        "src/config_schema.rs:output_generated_example_config",
-        "built example",
-        serde_json::json!({
-            "groups": config.groups.len(),
-            "has_websocket_auth": config.websocket_auth.is_some()
-        }),
-    );
     println!("{}", toml::to_string_pretty(&config)?);
     Ok(())
 }
